@@ -7,21 +7,24 @@ let digitCount = {};
 let opCount = { '+': 2, '-': 2, '*': 1, '/': 1 };
 
 function startGame() {
+    digitCount = {};
+    for (let i = 0; i <= 9; i++) digitCount[i] = 2;
+    opCount = { '+': 2, '-': 2, '*': 1, '/': 1 };
+
     document.getElementById('main-menu').style.display = 'none';
     document.getElementById('game').style.display = 'block';
     resetRound();
 }
 
+
 function resetRound() {
     currentNumber = getRandom(1, Math.floor(100 * 2 ** (round / 10)));
     targetNumber = getRandom(1, Math.floor(100 * 2 ** (round / 10)));
     inputValue = '';
-    digitCount = {};
-    for (let i = 0; i <= 9; i++) digitCount[i] = 2;
-    opCount = { '+': 2, '-': 2, '*': 1, '/': 1 };
 
     updateDisplay();
     generateDigitButtons();
+    updateShop();
 }
 
 function updateDisplay() {
@@ -90,6 +93,52 @@ function applyOperation(op) {
         alert(`Runde geschafft! +${reward}€`);
         resetRound();
     }
+}
+
+function updateShop() {
+    const shopDigits = document.getElementById('shop-digits');
+    shopDigits.innerHTML = '<strong>Ziffern kaufen (3€):</strong><br>';
+    for (let i = 0; i <= 9; i++) {
+        const btn = document.createElement('button');
+        btn.innerText = `${i}`;
+        btn.onclick = () => buyItem(i.toString(), 3, true);
+        shopDigits.appendChild(btn);
+    }
+
+    const shopOps = document.getElementById('shop-ops');
+    shopOps.innerHTML = '<strong>Operatoren kaufen:</strong><br>';
+
+    const ops = [
+        { symbol: '+', price: 5 },
+        { symbol: '-', price: 5 },
+        { symbol: '*', price: 8 },
+        { symbol: '/', price: 7 },
+    ];
+
+    for (let { symbol, price } of ops) {
+        const btn = document.createElement('button');
+        btn.innerText = `${symbol} (${price}€)`;
+        btn.onclick = () => buyItem(symbol, price, false);
+        shopOps.appendChild(btn);
+    }
+}
+
+function buyItem(item, cost, isDigit) {
+    if (money < cost) {
+        alert("Nicht genug Geld!");
+        return;
+    }
+
+    money -= cost;
+    if (isDigit) {
+        digitCount[item] = (digitCount[item] || 0) + 1;
+    } else {
+        opCount[item] = (opCount[item] || 0) + 1;
+    }
+
+    updateDisplay();
+    generateDigitButtons();
+    updateShop();
 }
 
 function endGame() {
