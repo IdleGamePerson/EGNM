@@ -5,6 +5,9 @@ let money = 30;
 let inputValue = '';
 let digitCount = {};
 let opCount = { '+': 2, '-': 2, '*': 1, '/': 1 };
+let isBoss = false;
+let bossType = null;
+let blockedOperator = null;
 
 function startGame() {
     digitCount = {};
@@ -19,14 +22,46 @@ function startGame() {
 
 
 function resetRound() {
-    currentNumber = getRandom(1, Math.floor(100 * 2 ** (round / 10)));
-    targetNumber = getRandom(1, Math.floor(100 * 2 ** (round / 10)));
+    isBoss = (round % 10 === 0);
+
+    if (isBoss) {
+        bossType = getBossType();
+        if (bossType === 'NO_OPERATIONS') {
+            const ops = ['+', '-', '*', '/'];
+            blockedOperator = ops[Math.floor(Math.random() * ops.length)];
+        } else {
+            blockedOperator = null;
+        }
+        console.log("Bosskampf:", bossType, blockedOperator ? `(blockiert: ${blockedOperator})` : '');
+    } else {
+        bossType = null;
+        blockedOperator = null;
+    }
+
+
+    let maxVal = Math.floor(100 * 2 ** (round / 10));
+    let minVal = 1;
+
+    if (isBoss && bossType === 'BIG_NUMBER') {
+        minVal = Math.floor(100 * 2 ** (round / 10));
+        maxVal = Math.floor(100 * 2 ** (round / 5));
+    }
+
+    currentNumber = getRandom(1, maxVal);
+    targetNumber = getRandom(minVal, maxVal);
     inputValue = '';
+
+    if (!isBoss || bossType !== 'DOUBLE_USAGE') {
+        digitCount = {};
+        for (let i = 0; i <= 9; i++) digitCount[i] = 2;
+        opCount = { '+': 2, '-': 2, '*': 1, '/': 1 };
+    }
 
     updateDisplay();
     generateDigitButtons();
     updateShop();
 }
+
 
 function updateDisplay() {
     document.getElementById('round').innerText = round;
@@ -34,6 +69,14 @@ function updateDisplay() {
     document.getElementById('target-number').innerText = targetNumber;
     document.getElementById('money').innerText = money;
     document.getElementById('input').innerText = inputValue || '0';
+    let roundText = round;
+    if (isBoss) {
+        roundText += ` (Boss: ${bossType}`;
+        if (bossType === 'NO_OPERATIONS') roundText += `, blockiert: ${blockedOperator}`;
+        roundText += ')';
+    }
+    document.getElementById('round').innerText = roundText;
+
 }
 
 function getRandom(min, max) {
@@ -72,10 +115,22 @@ function generateDigitButtons() {
 }
 
 function applyOperation(op) {
-    if (opCount[op] <= 0 || inputValue === '') return;
+    if (inputValue === '') return;
+
+    if (bossType === 'NO_OPERATIONS' && op === blockedOperator) {
+        alert(`Operator ${op} ist in diesem Bosskampf blockiert!`);
+        return;
+    }
+
+
+    let cost = (bossType === 'DOUBLE_USAGE') ? 2 : 1;
+    if (opCount[op] < cost) {
+        alert(`Nicht genug ${op}-Operatoren! (benötigt ${cost})`);
+        return;
+    }
 
     const val = parseInt(inputValue);
-    if (isNaN(val) || val === 0 && op === '/') return;
+    if (isNaN(val) || (val === 0 && op === '/')) return;
 
     if (op === '+') currentNumber += val;
     else if (op === '-') currentNumber -= val;
@@ -83,12 +138,13 @@ function applyOperation(op) {
     else if (op === '/') currentNumber = Math.floor(currentNumber / val);
 
     inputValue = '';
-    opCount[op]--;
+    opCount[op] -= cost;
+
     updateDisplay();
     generateDigitButtons();
 
     if (currentNumber === targetNumber) {
-        const reward = getRandom(8, 12);
+        const reward = isBoss ? getRandom(16, 24) : getRandom(8, 12);
         money += reward;
         round++;
         alert(`Runde geschafft! +${reward}€`);
@@ -125,6 +181,7 @@ function updateShop() {
 }
 
 function buyItem(item, cost, isDigit) {
+    if (bossType === 'DOUBLE_COST') cost *= 2;
     if (money < cost) {
         alert("Nicht genug Geld!");
         return;
@@ -142,10 +199,19 @@ function buyItem(item, cost, isDigit) {
     updateShop();
 }
 
+
 function endGame() {
     alert(`Spiel beendet. Du hast ${money} € erreicht.`);
     document.getElementById('shop').style.display = 'none';
     location.reload();
+}
+
+function getBossType() {
+    let r = Math.random() * 100;
+    if (r < 40) return 'BIG_NUMBER';
+    if (r < 70) return 'NO_OPERATIONS';
+    if (r < 90) return 'DOUBLE_USAGE';
+    return 'DOUBLE_COST';
 }
 
 document.getElementById('start-button').addEventListener('click', startGame);
