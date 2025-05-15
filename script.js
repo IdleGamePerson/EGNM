@@ -55,12 +55,6 @@ function resetRound() {
     targetNumber = getRandom(minVal, maxVal);
     inputValue = '';
 
-    if (!isBoss || bossType !== 'DOUBLE_USAGE') {
-        digitCount = {};
-        for (let i = 0; i <= 9; i++) digitCount[i] = 2;
-        opCount = { '+': 2, '-': 2, '*': 1, '/': 1 };
-    }
-
     updateDisplay();
     generateDigitButtons();
     updateShop();
