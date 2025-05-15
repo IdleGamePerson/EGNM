@@ -14,6 +14,7 @@ function startGame() {
     document.getElementById('main-menu').style.display = 'none';
     document.getElementById('game').style.display = 'block';
     resetRound();
+    document.getElementById('shop').style.display = 'block';
 }
 
 
@@ -143,6 +144,7 @@ function buyItem(item, cost, isDigit) {
 
 function endGame() {
     alert(`Spiel beendet. Du hast ${money} € erreicht.`);
+    document.getElementById('shop').style.display = 'none';
     location.reload();
 }
 
