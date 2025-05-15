@@ -30,3 +30,8 @@ button {
     padding: 8px 16px;
     font-size: 15px;
 }
+
+#shop {
+    display: none;
+    margin-top: 20px;
+}
