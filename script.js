@@ -43,7 +43,7 @@ function generateDigitButtons() {
         const count = digitCount[i];
         if (count > 0) {
             const btn = document.createElement('button');
-            btn.innerText = i;
+            btn.innerText = `${i} (${count})`;
             btn.onclick = () => {
                 inputValue += i;
                 digitCount[i]--;
@@ -53,13 +53,25 @@ function generateDigitButtons() {
             container.appendChild(btn);
         }
     }
+
+    // Ersetze auch die Operator-Buttons mit Anzeige der verbleibenden Anzahl:
+    const opsContainer = document.getElementById('operations');
+    opsContainer.innerHTML = '';
+    ['+', '-', '*', '/'].forEach(op => {
+        if (opCount[op] > 0) {
+            const btn = document.createElement('button');
+            btn.innerText = `${op} (${opCount[op]})`;
+            btn.onclick = () => applyOperation(op);
+            opsContainer.appendChild(btn);
+        }
+    });
 }
 
 function applyOperation(op) {
     if (opCount[op] <= 0 || inputValue === '') return;
 
     const val = parseInt(inputValue);
-    if (isNaN(val)) return;
+    if (isNaN(val) || val === 0 && op === '/') return;
 
     if (op === '+') currentNumber += val;
     else if (op === '-') currentNumber -= val;
@@ -69,6 +81,7 @@ function applyOperation(op) {
     inputValue = '';
     opCount[op]--;
     updateDisplay();
+    generateDigitButtons();
 
     if (currentNumber === targetNumber) {
         const reward = getRandom(8, 12);
