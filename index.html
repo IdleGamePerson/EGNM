@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Ein ganz normales Mathespiel</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="main-menu">
+        <h1>Ein ganz normales Mathespiel.</h1>
+        <button id="start-button">Start</button>
+    </div>
+
+    <div id="game" style="display: none;">
+        <div id="stats">
+            <p>Runde: <span id="round">1</span></p>
+            <p>Zahl: <span id="current-number">0</span></p>
+            <p>Ziel: <span id="target-number">0</span></p>
+            <p>Geld: <span id="money">30</span> €</p>
+        </div>
+        <div id="input-section">
+            <p>Aktuelle Eingabe: <span id="input">0</span></p>
+            <div id="digits"></div>
+            <div id="operations">
+                <button onclick="applyOperation('+')">+</button>
+                <button onclick="applyOperation('-')">-</button>
+                <button onclick="applyOperation('*')">*</button>
+                <button onclick="applyOperation('/')">/</button>
+            </div>
+            <button onclick="endGame()">Spiel beenden</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
