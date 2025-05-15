@@ -8,6 +8,8 @@ let opCount = { '+': 2, '-': 2, '*': 1, '/': 1 };
 let isBoss = false;
 let bossType = null;
 let blockedOperator = null;
+let startTime = null;
+let timerInterval = null;
 
 function startGame() {
     digitCount = {};
@@ -18,6 +20,8 @@ function startGame() {
     document.getElementById('game').style.display = 'block';
     resetRound();
     document.getElementById('shop').style.display = 'block';
+    startTime = Date.now();
+    timerInterval = setInterval(updateTimer, 31);  // ~30 FPS
 }
 
 
@@ -204,6 +208,7 @@ function endGame() {
     alert(`Spiel beendet. Du hast ${money} € erreicht.`);
     document.getElementById('shop').style.display = 'none';
     location.reload();
+    clearInterval(timerInterval);
 }
 
 function getBossType() {
@@ -212,6 +217,22 @@ function getBossType() {
     if (r < 70) return 'NO_OPERATIONS';
     if (r < 90) return 'DOUBLE_USAGE';
     return 'DOUBLE_COST';
+}
+
+function updateTimer() {
+    const now = Date.now();
+    const elapsed = now - startTime;
+
+    const minutes = Math.floor(elapsed / 60000);
+    const seconds = Math.floor((elapsed % 60000) / 1000);
+    const milliseconds = elapsed % 1000;
+
+    const timeStr =
+        String(minutes).padStart(2, '0') + ':' +
+        String(seconds).padStart(2, '0') + '.' +
+        String(milliseconds).padStart(3, '0');
+
+    document.getElementById('time').innerText = timeStr;
 }
 
 document.getElementById('start-button').addEventListener('click', startGame);
