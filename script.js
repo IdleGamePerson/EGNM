@@ -54,8 +54,9 @@ function resetRound() {
         maxVal = Math.floor(100 * 2 ** (round / 5));
     }
 
-    currentNumber = BigInt(getRandom(1, maxVal));
-    targetNumber = BigInt(getRandom(minVal, maxVal));
+    currentNumber = getRandomBigInt(minVal, maxVal);
+    targetNumber = getRandomBigInt(minVal, maxVal);
+
     inputValue = '';
 
 
@@ -82,8 +83,11 @@ function updateDisplay() {
 
 }
 
-function getRandom(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+function getRandomBigInt(min, max) {
+    // min und max müssen BigInt sein
+    const range = max - min + 1n;
+    const rand = BigInt(Math.floor(Math.random() * Number(range)));
+    return min + rand;
 }
 
 function generateDigitButtons() {
