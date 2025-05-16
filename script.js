@@ -24,6 +24,7 @@ function startGame() {
     startTime = Date.now();
     timerInterval = setInterval(updateTimer, 31);  // ~30 FPS
     totalTimeBefore = parseInt(localStorage.getItem('totalTime') || '0');
+    document.getElementById('stats-button').style.display = 'none';
 }
 
 
@@ -214,6 +215,7 @@ function endGame() {
     alert(`Spiel beendet. Du hast Runde ${round} erreicht.`);
     document.getElementById('shop').style.display = 'none';
     location.reload();
+    document.getElementById('stats-button').style.display = 'inline-block';
 }
 
 function getBossType() {
