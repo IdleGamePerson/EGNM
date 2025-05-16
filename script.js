@@ -10,6 +10,7 @@ let bossType = null;
 let blockedOperator = null;
 let startTime = null;
 let timerInterval = null;
+let totalTimeBefore = 0;
 
 function startGame() {
     digitCount = {};
@@ -22,6 +23,7 @@ function startGame() {
     document.getElementById('shop').style.display = 'block';
     startTime = Date.now();
     timerInterval = setInterval(updateTimer, 31);  // ~30 FPS
+    totalTimeBefore = parseInt(localStorage.getItem('totalTime') || '0');
 }
 
 
@@ -199,10 +201,19 @@ function buyItem(item, cost, isDigit) {
 
 
 function endGame() {
+    clearInterval(timerInterval);
+
+    const totalNow = Date.now() - startTime + totalTimeBefore;
+    localStorage.setItem('totalTime', totalNow.toString());
+
+    const bestRound = parseInt(localStorage.getItem('bestRound') || '0');
+    if (round > bestRound) {
+        localStorage.setItem('bestRound', round.toString());
+    }
+
     alert(`Spiel beendet. Du hast ${money} € erreicht.`);
     document.getElementById('shop').style.display = 'none';
     location.reload();
-    clearInterval(timerInterval);
 }
 
 function getBossType() {
@@ -227,6 +238,33 @@ function updateTimer() {
         String(milliseconds).padStart(3, '0');
 
     document.getElementById('time').innerText = timeStr;
+}
+
+document.getElementById('stats-button').addEventListener('click', showStats);
+
+function showStats() {
+    const best = parseInt(localStorage.getItem('bestRound') || '0');
+    const total = parseInt(localStorage.getItem('totalTime') || '0');
+
+    document.getElementById('best-round').innerText = best;
+    document.getElementById('total-playtime').innerText = formatTime(total);
+    document.getElementById('stats-modal').style.display = 'block';
+}
+
+function closeStats() {
+    document.getElementById('stats-modal').style.display = 'none';
+}
+
+function formatTime(ms) {
+    const minutes = Math.floor(ms / 60000);
+    const seconds = Math.floor((ms % 60000) / 1000);
+    const milliseconds = ms % 1000;
+
+    return (
+        String(minutes).padStart(2, '0') + ':' +
+        String(seconds).padStart(2, '0') + '.' +
+        String(milliseconds).padStart(3, '0')
+    );
 }
 
 document.getElementById('start-button').addEventListener('click', startGame);
