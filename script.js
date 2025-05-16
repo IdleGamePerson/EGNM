@@ -211,7 +211,7 @@ function endGame() {
         localStorage.setItem('bestRound', round.toString());
     }
 
-    alert(`Spiel beendet. Du hast ${money} € erreicht.`);
+    alert(`Spiel beendet. Du hast Runde ${round} erreicht.`);
     document.getElementById('shop').style.display = 'none';
     location.reload();
 }
