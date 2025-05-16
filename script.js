@@ -71,10 +71,11 @@ function updateDisplay() {
     document.getElementById('money').innerText = money;
     document.getElementById('input').innerText = inputValue || '0';
     let roundText = round;
+    const info = document.getElementById('boss-info');
     if (isBoss) {
-        roundText += ` (Boss: ${bossType}`;
-        if (bossType === 'NO_OPERATIONS') roundText += `, blockiert: ${blockedOperator}`;
-        roundText += ')';
+        info.innerText = getBossDescription(bossType);
+    } else {
+        info.innerText = '';
     }
     document.getElementById('round').innerText = roundText;
 
@@ -267,6 +268,21 @@ function formatTime(ms) {
         String(seconds).padStart(2, '0') + '.' +
         String(milliseconds).padStart(3, '0')
     );
+}
+
+function getBossDescription(type) {
+    switch (type) {
+        case 'BIG_NUMBER':
+            return 'Bosskampf: Du musst eine sehr große Zahl berechnen.';
+        case 'NO_OPERATIONS':
+            return `Bosskampf: Der Operator "${blockedOperator}" ist blockiert.`;
+        case 'DOUBLE_USAGE':
+            return 'Bosskampf: Jede Ziffer und jeder Operator braucht 2 Einheiten!';
+        case 'DOUBLE_COST':
+            return 'Bosskampf: Alles im Shop kostet doppelt so viel!';
+        default:
+            return '';
+    }
 }
 
 document.getElementById('start-button').addEventListener('click', startGame);
