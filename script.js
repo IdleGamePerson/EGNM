@@ -1,6 +1,6 @@
 let round = 1;
-let currentNumber = 0;
-let targetNumber = 0;
+let currentNumber = 0n;
+let targetNumber = 0n;
 let money = 30;
 let inputValue = '';
 let digitCount = {};
@@ -46,17 +46,18 @@ function resetRound() {
     }
 
 
-    let maxVal = Math.floor(100 * 2 ** (round / 10));
-    let minVal = 1;
+    let maxVal = BigInt(Math.floor(100 * 2 ** (round / 10)));
+    let minVal = 1n;
 
     if (isBoss && bossType === 'BIG_NUMBER') {
         minVal = Math.floor(100 * 2 ** (round / 10));
         maxVal = Math.floor(100 * 2 ** (round / 5));
     }
 
-    currentNumber = getRandom(1, maxVal);
-    targetNumber = getRandom(minVal, maxVal);
+    currentNumber = BigInt(getRandom(1, maxVal));
+    targetNumber = BigInt(getRandom(minVal, maxVal));
     inputValue = '';
+
 
     updateDisplay();
     generateDigitButtons();
@@ -66,8 +67,8 @@ function resetRound() {
 
 function updateDisplay() {
     document.getElementById('round').innerText = round;
-    document.getElementById('current-number').innerText = currentNumber;
-    document.getElementById('target-number').innerText = targetNumber;
+    document.getElementById('current-number').innerText = currentNumber.toString();
+    document.getElementById('target-number').innerText = targetNumber.toString();
     document.getElementById('money').innerText = money;
     document.getElementById('input').innerText = inputValue || '0';
     let roundText = round;
@@ -124,20 +125,19 @@ function applyOperation(op) {
         return;
     }
 
-
     let cost = (bossType === 'DOUBLE_USAGE') ? 2 : 1;
     if (opCount[op] < cost) {
         alert(`Nicht genug ${op}-Operatoren! (benötigt ${cost})`);
         return;
     }
 
-    const val = parseInt(inputValue);
-    if (isNaN(val) || (val === 0 && op === '/')) return;
+    const val = BigInt(inputValue);
+    if (val === 0n && op === '/') return;
 
     if (op === '+') currentNumber += val;
     else if (op === '-') currentNumber -= val;
     else if (op === '*') currentNumber *= val;
-    else if (op === '/') currentNumber = Math.floor(currentNumber / val);
+    else if (op === '/') currentNumber = currentNumber / val;
 
     inputValue = '';
     opCount[op] -= cost;
