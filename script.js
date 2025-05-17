@@ -147,7 +147,7 @@ function applyOperation(op) {
     updateDisplay();
     generateDigitButtons();
 
-    if (currentNumber === targetNumber) {
+    if (currentNumber == targetNumber) {
         const reward = isBoss ? getRandomInt(16, 24) : getRandomInt(8, 12);
         money += reward;
         round++;
