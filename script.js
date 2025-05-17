@@ -5,9 +5,11 @@ let money = 30;
 let inputValue = '';
 let digitCount = {};
 let opCount = { '+': 2, '-': 2, '*': 1, '/': 1 };
+
 let isBoss = false;
 let bossType = null;
 let blockedOperator = null;
+
 let startTime = null;
 let timerInterval = null;
 let totalTimeBefore = 0;
@@ -17,20 +19,20 @@ function startGame() {
     for (let i = 0; i <= 9; i++) digitCount[i] = 2;
     opCount = { '+': 2, '-': 2, '*': 1, '/': 1 };
 
+    startTime = Date.now();
+    timerInterval = setInterval(updateTimer, 31);
+    totalTimeBefore = parseInt(localStorage.getItem('totalTime') || '0');
+
     document.getElementById('main-menu').style.display = 'none';
     document.getElementById('game').style.display = 'block';
-    resetRound();
     document.getElementById('shop').style.display = 'block';
-    startTime = Date.now();
-    timerInterval = setInterval(updateTimer, 31);  // ~30 FPS
-    totalTimeBefore = parseInt(localStorage.getItem('totalTime') || '0');
     document.getElementById('stats-button').style.display = 'none';
-}
 
+    resetRound();
+}
 
 function resetRound() {
     isBoss = (round % 10 === 0);
-
     if (isBoss) {
         bossType = getBossType();
         if (bossType === 'NO_OPERATIONS') {
@@ -39,32 +41,27 @@ function resetRound() {
         } else {
             blockedOperator = null;
         }
-        console.log("Bosskampf:", bossType, blockedOperator ? `(blockiert: ${blockedOperator})` : '');
     } else {
         bossType = null;
         blockedOperator = null;
     }
 
-
     let maxVal = BigInt(Math.floor(100 * 2 ** (round / 10)));
     let minVal = 1n;
 
     if (isBoss && bossType === 'BIG_NUMBER') {
-        minVal = Math.floor(100 * 2 ** (round / 10));
-        maxVal = Math.floor(100 * 2 ** (round / 5));
+        minVal = BigInt(Math.floor(100 * 2 ** (round / 10)));
+        maxVal = BigInt(Math.floor(100 * 2 ** (round / 5)));
     }
 
     currentNumber = getRandomBigInt(minVal, maxVal);
     targetNumber = getRandomBigInt(minVal, maxVal);
-
     inputValue = '';
-
 
     updateDisplay();
     generateDigitButtons();
     updateShop();
 }
-
 
 function updateDisplay() {
     document.getElementById('round').innerText = round;
@@ -72,19 +69,16 @@ function updateDisplay() {
     document.getElementById('target-number').innerText = targetNumber.toString();
     document.getElementById('money').innerText = money;
     document.getElementById('input').innerText = inputValue || '0';
-    let roundText = round;
+
     const info = document.getElementById('boss-info');
     if (isBoss) {
         info.innerText = getBossDescription(bossType);
     } else {
         info.innerText = '';
     }
-    document.getElementById('round').innerText = roundText;
-
 }
 
 function getRandomBigInt(min, max) {
-    // min und max müssen BigInt sein
     const range = max - min + 1n;
     const rand = BigInt(Math.floor(Math.random() * Number(range)));
     return min + rand;
@@ -108,7 +102,6 @@ function generateDigitButtons() {
         }
     }
 
-    // Ersetze auch die Operator-Buttons mit Anzeige der verbleibenden Anzahl:
     const opsContainer = document.getElementById('operations');
     opsContainer.innerHTML = '';
     ['+', '-', '*', '/'].forEach(op => {
@@ -116,6 +109,11 @@ function generateDigitButtons() {
             const btn = document.createElement('button');
             btn.innerText = `${op} (${opCount[op]})`;
             btn.onclick = () => applyOperation(op);
+            if (bossType === 'NO_OPERATIONS' && op === blockedOperator) {
+                btn.disabled = true;
+                btn.style.opacity = 0.5;
+                btn.title = "Blockiert in diesem Bosskampf";
+            }
             opsContainer.appendChild(btn);
         }
     });
@@ -150,12 +148,16 @@ function applyOperation(op) {
     generateDigitButtons();
 
     if (currentNumber === targetNumber) {
-        const reward = isBoss ? getRandom(16, 24) : getRandom(8, 12);
+        const reward = isBoss ? getRandomInt(16, 24) : getRandomInt(8, 12);
         money += reward;
         round++;
         alert(`Runde geschafft! +${reward}€`);
         resetRound();
     }
+}
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function updateShop() {
@@ -170,7 +172,6 @@ function updateShop() {
 
     const shopOps = document.getElementById('shop-ops');
     shopOps.innerHTML = '<strong>Operatoren kaufen:</strong><br>';
-
     const ops = [
         { symbol: '+', price: 5 },
         { symbol: '-', price: 5 },
@@ -205,7 +206,6 @@ function buyItem(item, cost, isDigit) {
     updateShop();
 }
 
-
 function endGame() {
     clearInterval(timerInterval);
 
@@ -219,8 +219,8 @@ function endGame() {
 
     alert(`Spiel beendet. Du hast Runde ${round} erreicht.`);
     document.getElementById('shop').style.display = 'none';
-    location.reload();
     document.getElementById('stats-button').style.display = 'inline-block';
+    location.reload();
 }
 
 function getBossType() {
@@ -231,10 +231,24 @@ function getBossType() {
     return 'DOUBLE_COST';
 }
 
+function getBossDescription(type) {
+    switch (type) {
+        case 'BIG_NUMBER':
+            return 'Bosskampf: Du musst eine sehr große Zahl berechnen.';
+        case 'NO_OPERATIONS':
+            return `Bosskampf: Der Operator "${blockedOperator}" ist blockiert.`;
+        case 'DOUBLE_USAGE':
+            return 'Bosskampf: Jede Ziffer und jeder Operator braucht 2 Einheiten!';
+        case 'DOUBLE_COST':
+            return 'Bosskampf: Alles im Shop kostet doppelt so viel!';
+        default:
+            return '';
+    }
+}
+
 function updateTimer() {
     const now = Date.now();
     const elapsed = now - startTime;
-
     const minutes = Math.floor(elapsed / 60000);
     const seconds = Math.floor((elapsed % 60000) / 1000);
     const milliseconds = elapsed % 1000;
@@ -272,21 +286,6 @@ function formatTime(ms) {
         String(seconds).padStart(2, '0') + '.' +
         String(milliseconds).padStart(3, '0')
     );
-}
-
-function getBossDescription(type) {
-    switch (type) {
-        case 'BIG_NUMBER':
-            return 'Bosskampf: Du musst eine sehr große Zahl berechnen.';
-        case 'NO_OPERATIONS':
-            return `Bosskampf: Der Operator "${blockedOperator}" ist blockiert.`;
-        case 'DOUBLE_USAGE':
-            return 'Bosskampf: Jede Ziffer und jeder Operator braucht 2 Einheiten!';
-        case 'DOUBLE_COST':
-            return 'Bosskampf: Alles im Shop kostet doppelt so viel!';
-        default:
-            return '';
-    }
 }
 
 document.getElementById('start-button').addEventListener('click', startGame);
